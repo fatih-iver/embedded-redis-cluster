@@ -7,7 +7,7 @@ import java.util.List;
 public interface Redis {
     boolean isActive();
 
-    void start() throws EmbeddedRedisException;
+    void start() throws EmbeddedRedisException, InterruptedException;
 
     void stop() throws EmbeddedRedisException;
 

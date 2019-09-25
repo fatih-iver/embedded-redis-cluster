@@ -1,14 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>it.ozimov</groupId>
+    <groupId>dwi.aaron</groupId>
     <artifactId>embedded-redis</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.3-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
     <name>embedded-redis</name>
     <description>Redis embedded server for Java integration testing.
-        Project forked from https://github.com/kstyrc/embedded-redis</description>
-    <url>https://github.com/ozimov/embedded-redis</url>
+        Project forked from https://github.com/kstyrc/embedded-redis and
+        https://github.com/ozimov/embedded-redis </description>
+    <url>https://github.com/aarondwi/embedded-redis</url>
 
     <licenses>
         <license>
@@ -17,13 +18,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <scm>
-        <url>https://github.com/ozimov/embedded-redis</url>
-        <connection>scm:git:https://github.com/ozimov/embedded-redis.git</connection>
-        <developerConnection>scm:git:https://github.com/ozimov/embedded-redis.git</developerConnection>
-        <tag>embedded-redis-0.7.2</tag>
-    </scm>
 
     <developers>
         <developer>
@@ -48,6 +42,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
 
         <!-- TEST DEPENDENCIES -->
         <dependency>
@@ -57,31 +56,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>2.8.2</version>
-            <!-- incompatible with 2.9.0 and up: https://github.com/ozimov/embedded-redis/pull/4 -->
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
-            <version>1.8.0.RELEASE</version>
-            <scope>test</scope>
+            <version>2.1.10.RELEASE</version>
         </dependency>
 
     </dependencies>
@@ -161,6 +150,14 @@
                 <configuration>
                     <pushChanges>false</pushChanges>
                     <tag>${project.version}</tag>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
         </plugins>

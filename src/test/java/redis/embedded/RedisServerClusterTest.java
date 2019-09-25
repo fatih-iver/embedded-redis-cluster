@@ -3,53 +3,53 @@ package redis.embedded;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class RedisServerClusterTest {
-
-    private RedisServer redisServer1;
-    private RedisServer redisServer2;
+	private RedisCluster cluster;
 
     @Before
     public void setUp() throws Exception {
-        redisServer1 = RedisServer.builder()
-                .port(6300)
-                .build();
-
-        redisServer2 = RedisServer.builder()
-                .port(6301)
-                .slaveOf("localhost", 6300)
-                .build();
-
-        redisServer1.start();
-        redisServer2.start();
+		final List<Integer> group1 = Arrays.asList(7001, 8001);
+		final List<Integer> group2 = Arrays.asList(7002, 8002);
+		final List<Integer> group3 = Arrays.asList(7003, 8003);
+		/*
+		 * creates a cluster with quorum size of 2 and 3 replication groups,
+		 * each with one master and one slave
+		 */
+		cluster = RedisCluster.builder()
+			.sentinelPorts(new ArrayList<>()).quorumSize(2)
+			.serverPorts(group1).replicationGroup("master1", 1)
+			.serverPorts(group2).replicationGroup("master2", 1)
+			.serverPorts(group3).replicationGroup("master3", 1)
+			.build();
+		cluster.start();
     }
 
     @Test
-    public void testSimpleOperationsAfterRun() throws Exception {
-        JedisPool pool = null;
-        Jedis jedis = null;
-        try {
-            pool = new JedisPool("localhost", 6300);
-            jedis = pool.getResource();
-            jedis.mset("abc", "1", "def", "2");
+    public void testSimpleOperationsAfterClusterStart() throws Exception {
+		JedisCluster jc = null;
 
-            assertEquals("1", jedis.mget("abc").get(0));
-            assertEquals("2", jedis.mget("def").get(0));
-            assertEquals(null, jedis.mget("xyz").get(0));
-        } finally {
-            if (jedis != null)
-                pool.returnResource(jedis);
-        }
+		try {
+			jc = new JedisCluster(new HostAndPort("127.0.0.1", 7001));
+			jc.set("somekey", "somevalue");
+			assertEquals("the value shoudl be equal", "somevalue", jc.get("somekey"));
+		} finally {
+			if (jc != null) {
+				jc.close();
+			}
+		}
     }
 
 
     @After
     public void tearDown() throws Exception {
-        redisServer1.stop();
-        redisServer2.stop();
+		this.cluster.stop();
     }
 }

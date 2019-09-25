@@ -18,6 +18,9 @@ public class RedisClusterBuilder {
     private PortProvider replicationGroupPortProvider = new SequencePortProvider(6379);
     private final List<ReplicationGroup> groups = new LinkedList<ReplicationGroup>();
 
+	private final List<Integer> mastersPorts = new ArrayList<Integer>();
+	private final List<Integer> slavesPorts = new ArrayList<Integer>();
+
     public RedisClusterBuilder withSentinelBuilder(RedisSentinelBuilder sentinelBuilder) {
         this.sentinelBuilder = sentinelBuilder;
         return this;
@@ -79,31 +82,44 @@ public class RedisClusterBuilder {
     public RedisCluster build() {
         final List<Redis> sentinels = buildSentinels();
         final List<Redis> servers = buildServers();
-        return new RedisCluster(sentinels, servers);
+        return new RedisCluster(sentinels, servers,
+			this.mastersPorts, this.slavesPorts);
     }
 
     private List<Redis> buildServers() {
         List<Redis> servers = new ArrayList<Redis>();
         for(ReplicationGroup g : groups) {
-            servers.add(buildMaster(g));
-            buildSlaves(servers, g);
+			servers.add(buildMaster(g));
+			buildSlaves(servers, g);
         }
         return servers;
     }
 
     private void buildSlaves(List<Redis> servers, ReplicationGroup g) {
         for (Integer slavePort : g.slavePorts) {
+        	this.slavesPorts.add(slavePort);
             serverBuilder.reset();
             serverBuilder.port(slavePort);
-            serverBuilder.slaveOf("localhost", g.masterPort);
-            final RedisServer slave = serverBuilder.build();
+            final RedisServer slave = serverBuilder.
+				setting("cluster-enabled yes").
+				setting("cluster-config-file nodes-slave-" + slavePort + ".conf").
+				setting("cluster-node-timeout 5000").
+				setting("appendonly no").
+				build();
             servers.add(slave);
         }
     }
 
     private Redis buildMaster(ReplicationGroup g) {
+		this.mastersPorts.add(g.masterPort);
         serverBuilder.reset();
-        return serverBuilder.port(g.masterPort).build();
+        return serverBuilder.
+			port(g.masterPort).
+			setting("cluster-enabled yes").
+			setting("cluster-config-file nodes-slave-" + g.masterPort + ".conf").
+			setting("cluster-node-timeout 5000").
+			setting("appendonly no").
+			build();
     }
 
     private List<Redis> buildSentinels() {

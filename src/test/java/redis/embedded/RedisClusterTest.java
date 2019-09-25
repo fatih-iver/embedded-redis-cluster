@@ -38,7 +38,7 @@ public class RedisClusterTest {
         //given
         final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
         final List<Redis> servers = Arrays.asList(master1, master2);
-        instance = new RedisCluster(sentinels, servers);
+        instance = new RedisCluster(sentinels, servers, null, null);
 
         //when
         instance.stop();
@@ -57,7 +57,7 @@ public class RedisClusterTest {
         //given
         final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
         final List<Redis> servers = Arrays.asList(master1, master2);
-        instance = new RedisCluster(sentinels, servers);
+        instance = new RedisCluster(sentinels, servers, null, null);
 
         //when
         instance.start();
@@ -80,7 +80,7 @@ public class RedisClusterTest {
         given(master2.isActive()).willReturn(true);
         final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
         final List<Redis> servers = Arrays.asList(master1, master2);
-        instance = new RedisCluster(sentinels, servers);
+        instance = new RedisCluster(sentinels, servers, null, null);
 
         //when
         instance.isActive();
