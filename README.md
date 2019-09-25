@@ -1,7 +1,7 @@
 embedded-redis
 ==============
 
-Redis embedded server for Java integration testing
+Embedded Redis Cluster for Java integration testing
 
 Fork Notes
 ==============
@@ -11,14 +11,7 @@ The main goal of this fork is to provide *real* redis cluster support, allowing 
 Maven dependency
 ==============
 
-Maven Central:
-```xml
-<dependency>
-  <groupId>it.ozimov</groupId>
-  <artifactId>embedded-redis</artifactId>
-  <version>0.7.2</version>
-</dependency>
-```
+Not yet
 
 Usage
 ==============
@@ -72,7 +65,7 @@ RedisServer redisServer = RedisServer.builder()
 
 ## Setting up a cluster
 
-Our Embedded Redis has support for HA Redis clusters with Sentinels and master-slave replication
+This Redis cluster supports multi-node master and slave. Behind the scene, it will automatically setup the cluster using `CLUSTER MEET` and `CLUSTER REPLICATE`
 
 #### Using ephemeral ports
 A simple redis integration test with Redis cluster on ephemeral ports, with setup similar to that from production would look like this:
@@ -140,18 +133,18 @@ second replication group on ```6387, 6379``` and third replication group on ephe
 Redis version
 ==============
 
-When not provided with the desired redis executable, RedisServer runs os-dependent executable enclosed in jar. Currently is uses:
-- Redis 2.8.19 in case of Linux/Unix
-- Redis 2.8.19 in case of OSX
-- Redis 2.8.19 in case of Windows: https://github.com/MSOpenTech/redis/releases/tag/win-2.8.19
+Because this fork aims to support <i>real</i> redis cluster, the redis used should be version 3 or higher
+
+The default built-in redis here are as follows:
+- Linux/Unix (Not yet)
+- OSX/macOS (Not yet)
+- Redis 3.0. in case of Windows: 3.0.503
 
 However, you should provide RedisServer with redis executable if you need specific version.
-
 
 License
 ==============
 Licensed under the Apache License, Version 2.0
-
 
 Contributors
 ==============
@@ -161,7 +154,6 @@ Contributors
  * Artem Orobets ([@enisher](http://github.com/enisher))
  * Sean Simonsen ([@SeanSimonsen](http://github.com/SeanSimonsen))
  * Rob Winch ([@rwinch](http://github.com/rwinch))
-
 
 Changelog
 ==============
