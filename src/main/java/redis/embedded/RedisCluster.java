@@ -66,33 +66,39 @@ public class RedisCluster implements Redis {
 		 * and add their slots manually
 		 * using pipeline for faster execution
 		 */
-		for(Integer i = 0; i < mastersPorts.size(); i++) {
-			try {
-				j = new Jedis("127.0.0.1", mastersPorts.get(i));
+		try{
+			for(Integer i = 0; i < mastersPorts.size(); i++) {
+				try {
+					j = new Jedis("127.0.0.1", mastersPorts.get(i));
 
-				if(!i.equals(clusterMeetTarget)){
-					j.clusterMeet("127.0.0.1", clusterMeetTarget);
-				}
+					if(!i.equals(clusterMeetTarget)){
+						j.clusterMeet("127.0.0.1", clusterMeetTarget);
+					}
 
-				Integer finalI = i;
-				Pipeline jp = j.pipelined();
-				IntStream.range(0, 16384).filter(
-					is -> Integer.valueOf(is % mastersPorts.size()).equals(finalI)
-				).forEach(jp::clusterAddSlots);
-				jp.sync();
+					Integer finalI = i;
+					Pipeline jp = j.pipelined();
+					IntStream.range(0, 16384).filter(
+						is -> Integer.valueOf(is % mastersPorts.size()).equals(finalI)
+					).forEach(jp::clusterAddSlots);
+					jp.sync();
 
-			} catch (Exception e) {
-				EmbeddedRedisException err = new EmbeddedRedisException(
-					"Failed creating master instance at port: "+ mastersPorts.get(i));
-				err.setStackTrace(e.getStackTrace());
-				throw err;
-			} finally {
-				if(j!=null) {
-					j.close();
-					j=null;
+				} catch (Exception e) {
+					EmbeddedRedisException err = new EmbeddedRedisException(
+						"Failed creating master instance at port: "+ mastersPorts.get(i));
+					err.setStackTrace(e.getStackTrace());
+					throw err;
+				} finally {
+					if(j!=null) {
+						j.close();
+						j=null;
+					}
 				}
 			}
+		} catch (EmbeddedRedisException e) {
+			this.stop();
+			throw e;
 		}
+
 
 		/*
 		 * Preventing timing issues
@@ -104,22 +110,28 @@ public class RedisCluster implements Redis {
 		/*
 		 * meet every slave to the MEET target
 		 */
-		for(Integer sp : slavesPorts) {
-			try {
-				j = new Jedis("127.0.0.1", sp);
-				j.clusterMeet("127.0.0.1", clusterMeetTarget);
-			} catch (Exception e) {
-				EmbeddedRedisException err = new EmbeddedRedisException(
-					"Failed creating slave instance at port: "+ sp);
-				err.setStackTrace(e.getStackTrace());
-				throw err;
-			} finally {
-				if(j!=null) {
-					j.close();
-					j=null;
+		try {
+			for(Integer sp : slavesPorts) {
+				try {
+					j = new Jedis("127.0.0.1", sp);
+					j.clusterMeet("127.0.0.1", clusterMeetTarget);
+				} catch (Exception e) {
+					EmbeddedRedisException err = new EmbeddedRedisException(
+						"Failed creating slave instance at port: "+ sp);
+					err.setStackTrace(e.getStackTrace());
+					throw err;
+				} finally {
+					if(j!=null) {
+						j.close();
+						j=null;
+					}
 				}
 			}
+		} catch (EmbeddedRedisException e) {
+			this.stop();
+			throw e;
 		}
+
 
 		/*
 		 * also prevent timing issues
