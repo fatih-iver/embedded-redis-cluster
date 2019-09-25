@@ -1,5 +1,5 @@
-embedded-redis
-==============
+embedded-redis-cluster
+======================
 
 Embedded Redis Cluster for Java integration testing
 
