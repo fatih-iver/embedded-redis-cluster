@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,6 +12,8 @@ import static org.junit.Assert.assertEquals;
 
 public class RedisServerClusterTest {
 	private RedisCluster cluster;
+
+	private RedisCluster ephemeralCluster;
 
     @Before
     public void setUp() throws Exception {
@@ -24,16 +25,23 @@ public class RedisServerClusterTest {
 		 * each with one master and one slave
 		 */
 		cluster = RedisCluster.builder()
-			.sentinelPorts(new ArrayList<>()).quorumSize(2)
 			.serverPorts(group1).replicationGroup("master1", 1)
 			.serverPorts(group2).replicationGroup("master2", 1)
 			.serverPorts(group3).replicationGroup("master3", 1)
 			.build();
 		cluster.start();
+
+		// and for ephemeral cluster
+		ephemeralCluster = RedisCluster.builder().ephemeral()
+			.replicationGroup("master1", 1)
+			.replicationGroup("master2", 1)
+			.replicationGroup("master3", 1)
+			.build();
+		ephemeralCluster.start();
     }
 
     @Test
-    public void testSimpleOperationsAfterClusterStart() throws Exception {
+    public void testRedisClusterWithPredefinedPorts() throws Exception {
 		JedisCluster jc = null;
 
 		try {
@@ -47,6 +55,20 @@ public class RedisServerClusterTest {
 		}
     }
 
+	@Test
+	public void testRedisClusterWithEphemeralPorts() throws Exception {
+		JedisCluster jc = null;
+
+		try {
+			jc = new JedisCluster(new HostAndPort("127.0.0.1", this.ephemeralCluster.ports().get(0)));
+			jc.set("somekey", "somevalue");
+			assertEquals("the value shoudl be equal", "somevalue", jc.get("somekey"));
+		} finally {
+			if (jc != null) {
+				jc.close();
+			}
+		}
+	}
 
     @After
     public void tearDown() throws Exception {

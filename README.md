@@ -16,7 +16,7 @@ Not yet
 Usage
 ==============
 
-Running RedisServer is as simple as:
+Running Simple RedisServer is as simple as:
 ```java
 RedisServer redisServer = new RedisServer(6379);
 redisServer.start();
@@ -72,26 +72,25 @@ A simple redis integration test with Redis cluster on ephemeral ports, with setu
 ```java
 public class SomeIntegrationTestThatRequiresRedis {
   private RedisCluster cluster;
-  private Set<String> jedisSentinelHosts;
 
   @Before
   public void setup() throws Exception {
-    //creates a cluster with 3 sentinels, quorum size of 2 and 3 replication groups, each with one master and one slave
-    cluster = RedisCluster.builder().ephemeral().sentinelCount(3).quorumSize(2)
+    /*
+     * creates a cluster with quorum size of 2 and 3 replication groups, 
+     * each with one master and one slave
+     */
+    cluster = RedisCluster.builder().ephemeral()
                     .replicationGroup("master1", 1)
                     .replicationGroup("master2", 1)
                     .replicationGroup("master3", 1)
                     .build();
     cluster.start();
-
-    //retrieve ports on which sentinels have been started, using a simple Jedis utility class
-    jedisSentinelHosts = JedisUtil.sentinelHosts(cluster);
   }
   
   @Test
   public void test() throws Exception {
-    // testing code that requires redis running
-    JedisSentinelPool pool = new JedisSentinelPool("master1", jedisSentinelHosts);
+    JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", cluster.ports().get(0)));
+    // test your code
   }
   
   @After
@@ -118,7 +117,7 @@ public class SomeIntegrationTestThatRequiresRedis {
     final List<Integer> group1 = Arrays.asList(6667, 6668);
     final List<Integer> group2 = Arrays.asList(6387, 6379);
     //creates a cluster with 3 sentinels, quorum size of 2 and 3 replication groups, each with one master and one slave
-    cluster = RedisCluster.builder().sentinelPorts(sentinels).quorumSize(2)
+    cluster = RedisCluster.builder()
                     .serverPorts(group1).replicationGroup("master1", 1)
                     .serverPorts(group2).replicationGroup("master2", 1)
                     .ephemeralServers().replicationGroup("master3", 1)
@@ -138,7 +137,7 @@ Because this fork aims to support <i>real</i> redis cluster, the redis used shou
 The default built-in redis here are as follows:
 - Linux/Unix (Not yet)
 - OSX/macOS (Not yet)
-- Redis 3.0. in case of Windows: 3.0.503
+- Windows: 3.0.503
 
 However, you should provide RedisServer with redis executable if you need specific version.
 
