@@ -5,13 +5,19 @@ Embedded Redis Cluster for Java integration testing
 
 Fork Notes
 ==============
-This repository clones from [kstyrc](https://github.com/kstyrc/embedded-redis) original repository and [ozimov](https://github.com/ozimov/embedded-redis) clone repository.
-The main goal of this fork is to provide *real* redis cluster support, allowing access with redis-cluster API, such as JedisCluster or (more standard) redis-cli `-c` option.
+This repository clones from [aarondwi](https://github.com/aarondwi/embedded-redis-cluster) which clones from [kstyrc](https://github.com/kstyrc/embedded-redis) original repository and [ozimov](https://github.com/ozimov/embedded-redis) clone repository.
+The main goal of this fork is to provide *real* redis cluster support, allowing access with redis-cluster API, such as JedisCluster or (more standard) redis-cli `-c` option. In the original repository, maven artifacts were not published now it is published.
 
 Maven dependency
 ==============
-Not yet
-
+```xml
+<dependency>
+    <groupId>com.github.fatih-iver</groupId>
+    <artifactId>embedded-redis-cluster</artifactId>
+    <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
 
 ## Cluster Usage
 
